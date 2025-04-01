@@ -1,0 +1,16 @@
+{
+  "name": "revolt-bot",
+  "version": "1.0.0",
+  "description": "Bot that will scrape revolt chat app",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "fgalind0",
+  "license": "MIT",
+  "types": "module",
+  "dependencies": {
+    "puppeteer": "^24.5.0"
+  }
+}
