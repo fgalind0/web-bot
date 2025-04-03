@@ -1,52 +1,57 @@
 import puppeteer from 'puppeteer';
 import {setTimeout} from "node:timers/promises";
 
-// Or import puppeteer from 'puppeteer-core';
-const legitHostLogin = 'https://app.revolt.chat/login';
-const spoofHostLogin = 'https://revolt.onech.at/login';
-const spoofHostChannel = 'https://revolt.onech.at/server/01JQS39HAPK7T569HV0DGN5ZRN/channel/01JQS3BBTR6677TZ589N9VGK0P';
+// just need the channel we want
+const targetLoungeChannel = 'TBD';
+const spoofLoungeChannel = 'https://app.revolt.chat/server/01JQT731F1T231HEBZ709M46V1/channel/01JQT7E1V0DHAQF2X5KPNDZVDW';
 const claim = '/claim';
-const email = '';
-const normalPword = '';
-const spoofPword = '';
 
-// Launch the browser and open a new blank page
-const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: null,
-  });
+// in command prompt run the following command without leading //
+// start chrome --remote-debugging-port=9222
+const browserURL = 'http://127.0.0.1:9222';
+const browser = await puppeteer.connect({browserURL});
 const page = await browser.newPage();
 
-// Navigate the page to a URL.
-await page.goto(spoofHostLogin);
+// TBD change below to targetLoungeChannel
+await page.goto(spoofLoungeChannel);
+// let page load
+await setTimeout(4000);
 
-// Set screen size.
-// await page.setViewport({width: 1080, height: 1024});
+// will run infinitely
+while (true){
+    // try to get a ticket
+    const ticket = await getTicket(page);
+    if (ticket){
+        // if we have a ticket we click on it
+        await ticket.click();
+        // enter claim message
+        await page.locator('#message').fill(claim);
+        // press 'Enter' on keyboard
+        await page.keyboard.press('Enter');
+        // Log the progress
+        console.log('$$$ Claimed $$$');
+        console.log('Waiting for cool off');
+        // have a cool down
+        await setTimeout(1*20*1000); // testing cool down
+        // await setTimeout(7*60*1000); // prod cool down
+        console.log('Going again')
+    } else {
+        // we do not have a ticket and we try again after half second pause
+        await setTimeout(500);
+    }
+}
 
-// Type into search box. 
-await page.locator('#app > div > div > div._form_1xdze_87 > div > form > input:nth-child(2)').fill(email);
-await page.locator('#app > div > div > div._form_1xdze_87 > div > form > input:nth-child(4)').fill(spoofPword);
-await setTimeout(3000);
 
-// Wait and click on first result.
-await page.locator('#app > div > div > div._form_1xdze_87 > div > form > button').click();
-
-
-await setTimeout(2000);
-await page.goto(spoofHostChannel);
-await setTimeout(1000);
-await page.locator('#message').fill(claim);
-await page.keyboard.press('Enter');
-await setTimeout(500);
-await page.locator('#message').fill('YUHHHHHH');
-await page.keyboard.press('Enter');
-// Locate the full title with a unique string.
-// const textSelector = await page
-//   .locator('text/Customize and automate')
-//   .waitHandle();
-// const fullTitle = await textSelector?.evaluate(el => el.textContent);
-
-// Print the full title.
-// console.log('The title of this blog post is "%s".', fullTitle);
-
-// await browser.close();
+// takes in a page and tries to load the ticket
+async function getTicket(page) {
+    try {
+        // will try to load ticket for 10 seconds. If it finds a ticket will return to be claimed
+        // ATTENTION - Potential failure point if selector needs to be changed (because of channel name has different casing)
+        return await page.waitForSelector('div ::-p-text(ticket)', {timeout: 10_000}); // wait for 30 seconds
+      } catch (error) {
+        // we hit the 10 second timeout and return false so we don't try to click on nonexistent things
+        console.log('no ticket found in past 10 seconds')
+        return false;
+      }
+      
+}
