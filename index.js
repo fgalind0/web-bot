@@ -6,7 +6,7 @@ const targetLoungeChannel = 'TBD';
 const spoofLoungeChannel = 'https://app.revolt.chat/server/01JQT731F1T231HEBZ709M46V1/channel/01JQT7E1V0DHAQF2X5KPNDZVDW';
 const claim = '/claim';
 
-// in command prompt run the following command without leading //
+// in command prompt run the following command without leading "//"
 // start chrome --remote-debugging-port=9222
 const browserURL = 'http://127.0.0.1:9222';
 const browser = await puppeteer.connect({browserURL});
