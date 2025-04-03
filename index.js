@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import {setTimeout} from "node:timers/promises";
 
-// just need the channel we want
+// just need the url to channel we want
 const targetLoungeChannel = 'TBD';
 const spoofLoungeChannel = 'https://app.revolt.chat/server/01JQT731F1T231HEBZ709M46V1/channel/01JQT7E1V0DHAQF2X5KPNDZVDW';
 const claim = '/claim';
