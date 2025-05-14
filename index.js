@@ -8,7 +8,7 @@ const claim = '/claim';
 
 // STEPS
 // 1.) in command prompt run the following command without leading 
-// start chrome --remote-debugging-port=9222
+// start chrome --remote-debugging-port=9222 --user-data-dir="C:\chrome-debug-profile"
 // 2.) login to revolt chat in the browser that was opened
 // 3.) open terminal ctrl + ` (tilda to the left of 1 key)
 // 4.) run below command 
