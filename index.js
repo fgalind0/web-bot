@@ -1,16 +1,28 @@
 import puppeteer from 'puppeteer';
 import {setTimeout} from "node:timers/promises";
+import path from 'path';
+import fs from "fs";
 
 // just need the url to channel we want
 const targetLoungeChannel = 'https://revolt.onech.at/server/01JDKH82R0RHG2VF9YDWKEFHC5/channel/01JDKJX5E3370PBN8121999MND';
 const spoofLoungeChannel = 'https://app.revolt.chat/server/01JQT731F1T231HEBZ709M46V1/channel/01JQT7E1V0DHAQF2X5KPNDZVDW';
 const claim = '/claim';
 
-// Some tickets which are not disappearing are causing the bot to always claim them
-// This blacklist should ignore them from being selected
-const blackListedTickets = [
-    'ticket-8650',
-]
+function readLinesFromFile() {
+    try {
+      const absolutePath = path.resolve("blacklisted-tickets.txt");
+      const data = fs.readFileSync(absolutePath, 'utf8');
+      const lines = data.split(/\r?\n/).filter(line => line.trim() !== '');
+      return lines;
+    } catch (err) {
+      console.error('Error reading file:', err);
+      return [];
+    }
+  }
+  
+  // Some tickets which are not disappearing are causing the bot to always claim them
+  // This blacklist should ignore them from being selected
+  const blackListedTickets = readLinesFromFile();
 
 // STEPS
 // 1.) in command prompt run the following command without leading 
@@ -55,6 +67,7 @@ async function getTicket(page) {
     try {
         // will try to load ticket for 10 seconds. If it finds a ticket will return to be claimed
         // ATTENTION - Potential failure point if selector needs to be changed (because of channel name has different casing)
+        await page.waitForSelector('div ::-p-text(ticket-)', {timeout: 15_000}); // search for ticket for 15 seconds, raise error if not found
 
         // Get all div elements and then run through each
         const ticketElements = await page.$$("div");
@@ -62,7 +75,7 @@ async function getTicket(page) {
         let validTicketElement = null;
         for (const el of ticketElements) {
             // Using aria-label to try and get ticket
-            const label = await page.evaluate(el => el.getAttribute('aria-label'), el);
+            const label = await page.evaluate(el => el.textContent, el);
 
             // Get a ticket which matches the aria label for the ticket, but not the blacklisted tickets
             if (label && label.includes('ticket-') && !blackListedTickets.includes(label)) {
@@ -71,15 +84,11 @@ async function getTicket(page) {
                 break;
             }
           }
-        if (validTicketElement === null) {
-            throw new Error("No ticket found")
-        }
 
         return validTicketElement;
       } catch (error) {
         // console.log(error)
         // we hit the 15 second timeout and return false so we don't try to click on nonexistent things
-        await setTimeout(15*1000);
         console.log('no ticket found in past 15 seconds')
         return false;
       }
