@@ -75,7 +75,7 @@ async function getTicket(page) {
         let validTicketElement = null;
         for (const el of ticketElements) {
             // Using aria-label to try and get ticket
-            const label = await page.evaluate(el => el.textContent, el);
+            const label = await page.evaluate(el => el.getAttribute('aria-label'), el);
 
             // Get a ticket which matches the aria label for the ticket, but not the blacklisted tickets
             if (label && label.includes('ticket-') && !blackListedTickets.includes(label)) {
